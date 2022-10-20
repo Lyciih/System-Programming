@@ -6,7 +6,7 @@
  XXXX XXXX     X     XXXXXXXXXXXXXXX  
 
 
-##SIC/XE  
+##SIC/XE 
 
  opcode(6)     ni     xbpe         address(12)     |   extend(8)  
 <--------->   <-->   <---->   <------------------> | <----------->  
