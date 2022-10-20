@@ -1,13 +1,13 @@
 # System-Programming
 ## SIC
 
-&nbsp;opcode(8)&nbsp;&nbsp;&nbsp;&nbsp;X(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(15)  
+&nbsp;opcode(8)&nbsp;&nbsp;&nbsp;&nbsp;X(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(15)  
 <--------->&nbsp;&nbsp;&nbsp;<->&nbsp;&nbsp;&nbsp;<--------------->  
 &nbsp;&nbsp;xxxx xxxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxxxxxxxxxxxxx  
 
 
 ## SIC/XE 
 
- opcode(6)     ni     xbpe         address(12)     |   extend(8)  
-<--------->   <-->   <---->   <------------------> | <----------->  
- XXXX   XX     XX     XXXX     XXXX   XXXX   XXXX  |  xxxx   xxxx  
+&nbsp;opcode(6)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ni&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xbpe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(12)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;extend(8)  
+<--------->&nbsp;&nbsp;&nbsp;<-->&nbsp;&nbsp;&nbsp;<---->&nbsp;&nbsp;&nbsp;<------------------>&nbsp;|&nbsp;<----------->  
+&nbsp;XXXX&nbsp;&nbsp;&nbsp;XX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;|&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;xxxx  
