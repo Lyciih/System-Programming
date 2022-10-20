@@ -2,8 +2,8 @@
 ##SIC
 
  opcode(8)    X(1)     address(15)  
-<--------->&nbsp;&nbsp;&nbsp;<->   <--------------->  
- XXXX XXXX     X     XXXXXXXXXXXXXXX  
+<--------->&nbsp;&nbsp;&nbsp;<->&nbsp;&nbsp;&nbsp;<--------------->  
+ XXXX XXXX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXXXXXXXXXXXXX  
 
 
 ##SIC/XE 
