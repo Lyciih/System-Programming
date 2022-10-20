@@ -1,12 +1,12 @@
 # System-Programming
-##SIC
+## SIC
 
- opcode(8)    X(1)     address(15)  
+&nbsp;opcode(8)&nbsp;&nbsp;&nbsp;&nbsp;X(1)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(15)  
 <--------->&nbsp;&nbsp;&nbsp;<->&nbsp;&nbsp;&nbsp;<--------------->  
 &nbsp;&nbsp;xxxx xxxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxxxxxxxxxxxxx  
 
 
-##SIC/XE 
+## SIC/XE 
 
  opcode(6)     ni     xbpe         address(12)     |   extend(8)  
 <--------->   <-->   <---->   <------------------> | <----------->  
