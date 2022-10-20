@@ -8,6 +8,6 @@
 
 ## SIC/XE 
 
-&nbsp;opcode(6)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ni&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xbpe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(12)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;extend(8)  
+&nbsp;opcode(6)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ni&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xbpe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;address(12)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;extend(8)  
 <--------->&nbsp;&nbsp;&nbsp;<-->&nbsp;&nbsp;&nbsp;<---->&nbsp;&nbsp;&nbsp;<------------------>&nbsp;|&nbsp;<----------->  
-&nbsp;XXXX&nbsp;&nbsp;&nbsp;XX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;&nbsp;XXXX&nbsp;&nbsp;|&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;xxxx  
+&nbsp;xxxx&nbsp;&nbsp;&nbsp;xx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;xxxx&nbsp;&nbsp;|&nbsp;&nbsp;xxxx&nbsp;&nbsp;&nbsp;xxxx  
