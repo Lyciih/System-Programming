@@ -2,7 +2,7 @@
 ##SIC
 
  opcode(8)    X(1)     address(15)  
-<--------->   <->   <--------------->  
+<--------->&nbsp;&nbsp;&nbsp;<->   <--------------->  
  XXXX XXXX     X     XXXXXXXXXXXXXXX  
 
 
