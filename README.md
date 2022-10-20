@@ -3,7 +3,7 @@
 
  opcode(8)    X(1)     address(15)  
 <--------->&nbsp;&nbsp;&nbsp;<->&nbsp;&nbsp;&nbsp;<--------------->  
-&nbsp;xxxx xxxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxxxxxxxxxxxxx  
+&nbsp;&nbsp;xxxx xxxx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xxxxxxxxxxxxxxx  
 
 
 ##SIC/XE 
