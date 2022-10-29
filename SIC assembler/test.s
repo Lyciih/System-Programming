@@ -5,7 +5,7 @@ CLOOP   JSUB    RDREC
         COMP 	ZERO
         JEQ  	ENDFIL
         JSUB 	WRREC
-        J  	    CLOOP
+        J       CLOOP
 ENDFIL  LDA  	EOF 
         STA  	BUFFER 
         LDA  	THREE 
@@ -48,5 +48,4 @@ WLOOP   TD      OUTPUT
         JLT     WLOOP 
         RSUB    
 OUTPUT  BYTE    X'05'
-  END   FIRST 
-
+END     FIRST
