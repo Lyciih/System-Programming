@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include"linked_list.h"
 
  
 typedef struct sic24_t{
@@ -9,10 +10,31 @@ typedef struct sic24_t{
     unsigned int opcode : 8; 
     }sic24_t;
 
+
 typedef struct opcode{
     char *command;
     int code;
 }opcode;
+
+
+typedef struct label{
+	char *label_name;
+    int addres;
+	llNode_t node;
+}label;
+
+int printf_all_list(llNode_t *head)
+{
+	llNode_t *current = head;
+	while(current->next != NULL )
+	{
+		current = current->next;
+		printf("%-8s " , return_to_user_struct_pointer(label, node, current)->label_name);
+        printf("%X\n" , return_to_user_struct_pointer(label, node, current)->addres);
+	}
+	printf("end\n");
+    return 0;
+}
 
 
 
@@ -46,7 +68,7 @@ int main(int argc, char *argv[])
         //顯示當前處理的來源檔名
         printf("[%d] [source] %s\n", i, argv[i]);
         //顯示目標檔名
-        printf("[%d] [target] %s\n\n", i, &obj_file_name);
+        printf("[%d] [target] %s\n\n", i, obj_file_name);
 
 //*******************************   第二階段 開始編譯    *********************************************//
         opcode sic[26];
@@ -130,7 +152,11 @@ int main(int argc, char *argv[])
 //因為編譯過程會用到雙層迴圈( while + switch )，為了能在處理完後用return回來，把編譯過程寫成副程式 translter
         //translter(ass, obj_file);
 
+
         sic24_t code;
+
+        llNode_t *label_list = LL_init();
+
         int line_count = 1;
         int code_count = 0;
         char buffer[50];
@@ -141,6 +167,11 @@ int main(int argc, char *argv[])
         int COMMAND_state = 0;
         int RESW_state = 0;
         int RESB_state = 0;
+        label *new;
+        label * free_top_temp;
+        llNode_t * free_temp;
+
+
         while(fgets(buffer, 50, ass))
         {
             
@@ -161,8 +192,18 @@ int main(int argc, char *argv[])
                     {
                         COMMAND_state = 1;
                         code.opcode = sic[i].code;
-                    }  
+                    } 
                 }
+
+                if(COMMAND_state == 0)
+                {
+                    new = malloc(sizeof(label));
+                    new->label_name = malloc(strlen(substr));
+                    strcpy(new->label_name, substr);
+                    new->addres = code_count;
+                    LL_add_tail(&new->node, label_list);
+                }
+
                 printf("\n");
 //------------------------------------------------------------------------------------------------
 
@@ -250,6 +291,22 @@ int main(int argc, char *argv[])
         //將來源檔與目標檔關起來
         fclose(ass);
         fclose(obj_file);
+        printf_all_list(label_list);
+
+        while(!LL_isEmpty(label_list))
+	    {
+            free_temp = LL_next_node(label_list);
+            free_top_temp = return_to_user_struct_pointer(label, node, free_temp);
+		    LL_delete_next(label_list);
+            memset(free_top_temp->label_name, 0, strlen(free_top_temp->label_name));
+            free(free_top_temp->label_name);
+            free_top_temp->label_name = NULL;
+            free(free_top_temp);
+            free_top_temp = NULL;
+            free_temp = NULL;
+	    }
+	    LL_free_head(label_list);
+
 
     }
 

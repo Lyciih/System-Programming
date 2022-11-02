@@ -1,7 +1,7 @@
 all: assembler 
 
-assembler: assembler.c
-	gcc assembler.c -o assembler
+assembler:liblinked_list.a assembler.c
+	gcc assembler.c -o assembler -Wall -L . -l linked_list 
 
 
 
