@@ -5,8 +5,7 @@
 
  
 typedef struct sic24_t{
-    unsigned int addres : 15;
-    unsigned int index : 1;
+    unsigned int addres : 16;
     unsigned int opcode : 8; 
     }sic24_t;
 
@@ -49,6 +48,7 @@ int main(int argc, char *argv[])
     {  
         //以唯讀模式開啟來源檔
         FILE *ass = fopen(argv[i],"r");
+        unsigned long long after_scan = (unsigned long long)ass;
         
         //宣告用來分割檔名與副檔名的字元為cut
         char cut = '.';
@@ -156,17 +156,28 @@ int main(int argc, char *argv[])
         sic24_t code;
 
         llNode_t *label_list = LL_init();
+        llNode_t *label_list_temp;
 
         int line_count = 1;
         int code_count = 0;
         char buffer[50];
+        char argbuffer[50];
         char write_buffer[50];
         char *saveptr = NULL;
         char *substr = NULL;
+        char *savearg = NULL;
+        char *subarg = NULL;
+
         int START_state = 0; 
         int COMMAND_state = 0;
+        int COMMAND_state_two = 0;
         int RESW_state = 0;
         int RESB_state = 0;
+        int WORD_state = 0;
+        int BYTE_state = 0;
+        int ARG_state_one= 0;
+        int arg_get = 0;
+        int RSUB_state = 0;
         label *new;
         label * free_top_temp;
         llNode_t * free_temp;
@@ -178,14 +189,9 @@ int main(int argc, char *argv[])
 
             if(*buffer != '.')
             {
-                printf("_________________________________\n");
-                printf("%-5d  %-5X  %s", line_count, code_count, buffer);
-                printf("---------------------------------\n");
 //------------------------------------------------------------------------------------------------               
 
                 substr = strtok_r(buffer, " ", &saveptr);
-                printf("%-8s", substr);
-
                 for(int i = 0; i < 26; i++)
                 {
                     if(strcmp(substr, sic[i].command) == 0)
@@ -203,8 +209,6 @@ int main(int argc, char *argv[])
                     new->addres = code_count;
                     LL_add_tail(&new->node, label_list);
                 }
-
-                printf("\n");
 //------------------------------------------------------------------------------------------------
 
 
@@ -212,7 +216,6 @@ int main(int argc, char *argv[])
                 substr = strtok_r(saveptr, " ", &saveptr);
                 if(substr != NULL)
                 {
-                    printf("%-8s", substr);
                     for(int i = 0; i < 26; i++)
                     {
                         if(strcmp(substr, sic[i].command) == 0)
@@ -222,15 +225,15 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-                printf("\n");
                 if(strcmp(substr, "START") == 0){
                     
                     START_state = 1;
                 }
                 else if(strcmp(substr, "BYTE") == 0){
-                    code_count+=3;
+                    BYTE_state = 1;
                 }
                 else if(strcmp(substr, "WORD") == 0){
+                    WORD_state = 1;
                     code_count+=3;
                 }
                 else if(strcmp(substr, "RESW") == 0){
@@ -244,12 +247,6 @@ int main(int argc, char *argv[])
 
 
                 substr = strtok_r(saveptr, " ", &saveptr);
-                if(substr != NULL){
-                    printf("%-8s", substr);
-                }
-                printf("\n");
-
-//------------------------------------------------------------------------------------------------
 
                 if(START_state == 1){
                     code_count += 4096;
@@ -263,9 +260,30 @@ int main(int argc, char *argv[])
                     code_count += atoi(substr);
                 }
 
+                if(BYTE_state == 1){
+                    if(*substr == 'X')
+                    {
+                        strcpy(argbuffer, substr);
+                        subarg = strtok_r(argbuffer, "'", &savearg);
+                        subarg = strtok_r(savearg, "'", &savearg);
+                        code_count += strlen(subarg)/2;
+                    }
+
+                    if(*substr == 'C')
+                    {
+                        strcpy(argbuffer, substr);
+                        subarg = strtok_r(argbuffer, "'", &savearg);
+                        subarg = strtok_r(savearg, "'", &savearg);
+                        code_count += strlen(subarg);
+                    }
+
+                }
+
+
+//------------------------------------------------------------------------------------------------
+
                 if(COMMAND_state == 1){
                     code_count+=3;
-                    printf("                                    %02x%x%03x\n", code.opcode, code.index, code.addres);
                     sprintf(write_buffer, "%02x", code.opcode);
                     fputs(write_buffer, obj_file);
                     fputs("\n", obj_file);
@@ -274,25 +292,253 @@ int main(int argc, char *argv[])
 
                 
                 code.opcode = 0;
-                code.index = 0;
                 code.addres = 0;                
                 START_state = 0;
                 COMMAND_state = 0;
                 RESW_state = 0;
                 RESB_state = 0;
+                WORD_state = 0;
+                BYTE_state = 0;
                 line_count++;
             }
         }
-        
+        line_count = 1;
+        code_count = 0;
 
+
+
+
+
+
+
+
+
+
+        printf_all_list(label_list);
+        fclose(ass);
+        ass = fopen(argv[i],"r");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        while(fgets(buffer, 50, ass))
+        {
+            
+
+            if(*buffer != '.')
+            {
+                printf("______________________________________\n");
+                printf("%-5d  %-5X  %s", line_count, code_count, buffer);
+                printf("--------------------------------------\n");
+//------------------------------------------------------------------------------------------------               
+
+                substr = strtok_r(buffer, " ", &saveptr);
+                //printf("%-8s", substr);
+
+                for(int i = 0; i < 26; i++)
+                {
+                    if(strcmp(substr, sic[i].command) == 0)
+                    {
+                        COMMAND_state = 1;
+                        code.opcode = sic[i].code;
+                        if(!strcmp(sic[i].command, "RSUB"))
+                        {
+                            RSUB_state = 1;
+                        }
+                    } 
+                }
+
+                if(COMMAND_state == 1)
+                {
+                    ARG_state_one = 1;
+                }
+
+
+                //printf("\n");
+//------------------------------------------------------------------------------------------------
+
+
+
+                substr = strtok_r(saveptr, " ", &saveptr);
+                if(substr != NULL)
+                {
+                    //printf("%-8s", substr);
+                    for(int i = 0; i < 26; i++)
+                    {
+                        if(strcmp(substr, sic[i].command) == 0)
+                        {
+                            COMMAND_state = 1;
+                            COMMAND_state_two = 1;
+                            code.opcode = sic[i].code;
+                        }
+                    }
+                }
+                //printf("\n");
+                if(strcmp(substr, "START") == 0){
+                    
+                    START_state = 1;
+                }
+                else if(strcmp(substr, "BYTE") == 0){
+                    BYTE_state = 1;
+                }
+                else if(strcmp(substr, "WORD") == 0){
+                    WORD_state = 1;
+                    code_count+=3;
+                }
+                else if(strcmp(substr, "RESW") == 0){
+                    RESW_state = 1;
+                }
+                else if(strcmp(substr, "RESB") == 0){
+                    RESB_state = 1;
+                }
+
+
+                if(ARG_state_one == 1  && RSUB_state == 0)
+                {
+                    label_list_temp = label_list;
+                    while(label_list_temp->next != NULL)
+                    {
+                        label_list_temp = LL_next_node(label_list_temp);
+                        if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                        {
+                            code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                            arg_get = 1;
+                        }
+                    }
+                    
+                    if(!arg_get)
+                    {
+                        substr = strtok_r(substr, ",", &saveptr);
+                        label_list_temp = label_list;
+                        while(label_list_temp->next != NULL)
+                        {
+                            label_list_temp = LL_next_node(label_list_temp);
+                            if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                            {
+                                code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                            }
+                        }
+                        substr = strtok_r(saveptr, " ", &saveptr);
+                        if(*substr == 'X')
+                        {
+                            code.addres +=  32768;
+                        }
+                    }
+                    ARG_state_one = 0;
+                    
+                }
+//------------------------------------------------------------------------------------------------
+
+
+
+                substr = strtok_r(saveptr, " ", &saveptr);
+                if(substr != NULL){
+                    //printf("%-8s", substr);
+                }
+                //printf("\n");
+
+
+                if(START_state == 1){
+                    code_count += 4096;
+                }
+
+                if(RESW_state == 1){
+                    code_count += 3*atoi(substr);
+                }
+
+                if(RESB_state == 1){
+                    code_count += atoi(substr);
+                }
+
+                if(BYTE_state == 1){
+                    if(*substr == 'X')
+                    {
+                        strcpy(argbuffer, substr);
+                        subarg = strtok_r(argbuffer, "'", &savearg);
+                        subarg = strtok_r(savearg, "'", &savearg);
+                        code_count += strlen(subarg)/2;
+                        printf("                                            %s\n",subarg);
+                    }
+
+                    if(*substr == 'C')
+                    {
+                        strcpy(argbuffer, substr);
+                        subarg = strtok_r(argbuffer, "'", &savearg);
+                        subarg = strtok_r(savearg, "'", &savearg);
+                        code_count += strlen(subarg);
+                    }
+
+                }
+
+                if(WORD_state == 1){
+                    printf("                                        %06X\n",atoi(substr));
+                }
+
+                if(COMMAND_state_two == 1)
+                {
+                    label_list_temp = label_list;
+                    while(label_list_temp->next != NULL)
+                    {
+                        label_list_temp = LL_next_node(label_list_temp);
+                        if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                        {
+                            
+                            code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                        }
+                    }  
+                }
+
+
+//------------------------------------------------------------------------------------------------
+
+                if(COMMAND_state == 1){
+                    code_count+=3;
+                    printf("                                        %02X%04X\n", code.opcode, code.addres);
+                    sprintf(write_buffer, "%02x", code.opcode);
+                    fputs(write_buffer, obj_file);
+                    fputs("\n", obj_file);
+                }
+
+
+                
+                code.opcode = 0;
+                code.addres = 0;                
+                START_state = 0;
+                COMMAND_state = 0;
+                COMMAND_state_two = 0;
+                RESW_state = 0;
+                RESB_state = 0;
+                WORD_state = 0;
+                BYTE_state = 0;
+                ARG_state_one = 0;
+                arg_get = 0;
+                RSUB_state = 0;
+                line_count++;
+            }
+        }
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 //*****************************   第三階段 收尾並關閉所有檔案    **************************************//
         
         //將來源檔與目標檔關起來
         fclose(ass);
         fclose(obj_file);
-        printf_all_list(label_list);
 
+         //釋放之前申請的空間
         while(!LL_isEmpty(label_list))
 	    {
             free_temp = LL_next_node(label_list);
