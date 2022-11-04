@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include"linked_list.h"
+#include<math.h>
 
  
 typedef struct sic24_t{
@@ -35,6 +36,47 @@ int printf_all_list(llNode_t *head)
     return 0;
 }
 
+int exponent_Int(const int base, int n)
+{
+    int p = base;
+    if(n == 0)
+    {
+        p = 1;
+    }
+    else
+    {
+        for (int i = 1; i < n; i++)
+        {
+            p *= base;
+        }
+    }
+    return p;
+}
+
+int hex_to_dex(char *hex)
+{
+    char *char_temp = (char *)malloc(strlen(hex));
+    strcpy(char_temp, hex);
+    char_temp = strtok(char_temp, "\n");
+    char temp[2];
+    int total = 0;
+    int count = strlen(char_temp);
+
+    while(count-- && count >= 0)
+    {
+        sprintf(temp, "%c", *char_temp);
+        if(strcmp(temp, "A") == 0){total += exponent_Int(16, count)*10;}
+        if(strcmp(temp, "B") == 0){total += exponent_Int(16, count)*11;}
+        if(strcmp(temp, "C") == 0){total += exponent_Int(16, count)*12;}
+        if(strcmp(temp, "D") == 0){total += exponent_Int(16, count)*13;}
+        if(strcmp(temp, "E") == 0){total += exponent_Int(16, count)*14;}
+        if(strcmp(temp, "F") == 0){total += exponent_Int(16, count)*15;}
+        else{total += exponent_Int(16, count)*atoi(temp);}    
+        char_temp++;    
+    }
+
+    return total;
+}
 
 
 //將目標檔名作為命令列參數傳進main裡面
@@ -48,25 +90,22 @@ int main(int argc, char *argv[])
     {  
         //以唯讀模式開啟來源檔
         FILE *ass = fopen(argv[i],"r");
-        unsigned long long after_scan = (unsigned long long)ass;
         
-        //宣告用來分割檔名與副檔名的字元為cut
-        char cut = '.';
-        //計算來源檔名從第一個字元到cut總共有幾個字元
-        size_t cut_position = strcspn(argv[i], &cut);
-        //以計算出來的數量宣告目標檔名的字元陣列
-        char obj_file_name[cut_position];
+        //顯示當前處理的來源檔名
+        printf("[%d] [source] %s\n", i, argv[i]);
+     
+        //以'.'切割檔名
+        char *obj_file_name = strtok(argv[i], ".");
         //宣告要加在檔名後方的副檔名字串
         char *obj= ".o";
-        //將來源檔副檔名之前的字串複製到目標檔名的字元陣列中
-        memcpy(obj_file_name, argv[i], cut_position);
+
         //將目標檔名後方接上.o副檔名       
         strcat(obj_file_name, obj);
         //以目標檔名開啟新檔
         FILE *obj_file = fopen(obj_file_name,"w");
 
-        //顯示當前處理的來源檔名
-        printf("[%d] [source] %s\n", i, argv[i]);
+        
+        
         //顯示目標檔名
         printf("[%d] [target] %s\n\n", i, obj_file_name);
 
@@ -167,6 +206,15 @@ int main(int argc, char *argv[])
         char *substr = NULL;
         char *savearg = NULL;
         char *subarg = NULL;
+        //char program_name[50];
+        //int total_code = 0;
+        //int start_code = 0;
+        int segment_count = 0;
+        
+
+ 
+ 
+
 
         int START_state = 0; 
         int COMMAND_state = 0;
@@ -249,7 +297,8 @@ int main(int argc, char *argv[])
                 substr = strtok_r(saveptr, " ", &saveptr);
 
                 if(START_state == 1){
-                    code_count += 4096;
+                    code_count += hex_to_dex(substr);
+                    //start_code = code_count;
                 }
 
                 if(RESW_state == 1){
@@ -284,9 +333,6 @@ int main(int argc, char *argv[])
 
                 if(COMMAND_state == 1){
                     code_count+=3;
-                    sprintf(write_buffer, "%02x", code.opcode);
-                    fputs(write_buffer, obj_file);
-                    fputs("\n", obj_file);
                 }
 
 
@@ -303,6 +349,8 @@ int main(int argc, char *argv[])
             }
         }
         line_count = 1;
+
+        //total_code = code_count - start_code; 
         code_count = 0;
 
 
@@ -315,8 +363,7 @@ int main(int argc, char *argv[])
 
 
         printf_all_list(label_list);
-        fclose(ass);
-        ass = fopen(argv[i],"r");
+        rewind(ass);
 
 
 
@@ -339,7 +386,7 @@ int main(int argc, char *argv[])
 
             if(*buffer != '.')
             {
-                printf("______________________________________\n");
+                printf("________________________________________________\n");
                 printf("%-5d  %-5X  %s", line_count, code_count, buffer);
                 printf("--------------------------------------\n");
 //------------------------------------------------------------------------------------------------               
@@ -366,9 +413,7 @@ int main(int argc, char *argv[])
                 }
 
 
-                //printf("\n");
 //------------------------------------------------------------------------------------------------
-
 
 
                 substr = strtok_r(saveptr, " ", &saveptr);
@@ -387,7 +432,11 @@ int main(int argc, char *argv[])
                 }
                 //printf("\n");
                 if(strcmp(substr, "START") == 0){
-                    
+
+                    //sprintf(write_buffer, "%s\n", subarg);
+                    //fputs("H ", obj_file);
+                    //sprintf(program_name, "%-6s ", return_to_user_struct_pointer(label, node, label_list->next)->label_name);
+                    //fputs(program_name, obj_file);
                     START_state = 1;
                 }
                 else if(strcmp(substr, "BYTE") == 0){
@@ -395,7 +444,7 @@ int main(int argc, char *argv[])
                 }
                 else if(strcmp(substr, "WORD") == 0){
                     WORD_state = 1;
-                    code_count+=3;
+
                 }
                 else if(strcmp(substr, "RESW") == 0){
                     RESW_state = 1;
@@ -411,7 +460,7 @@ int main(int argc, char *argv[])
                     while(label_list_temp->next != NULL)
                     {
                         label_list_temp = LL_next_node(label_list_temp);
-                        if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                        if(strcmp(strtok(substr, "\n"), strtok(return_to_user_struct_pointer(label, node, label_list_temp)->label_name, " ")) == 0)
                         {
                             code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
                             arg_get = 1;
@@ -451,7 +500,12 @@ int main(int argc, char *argv[])
 
 
                 if(START_state == 1){
-                    code_count += 4096;
+                    printf("%d\n", hex_to_dex(substr));
+                    //sprintf(write_buffer, "%06X %06X\n", hex_to_dex(substr), total_code);
+                    //fputs(write_buffer, obj_file);
+                    code_count += hex_to_dex(substr);
+
+                    
                 }
 
                 if(RESW_state == 1){
@@ -460,6 +514,7 @@ int main(int argc, char *argv[])
 
                 if(RESB_state == 1){
                     code_count += atoi(substr);
+
                 }
 
                 if(BYTE_state == 1){
@@ -468,8 +523,11 @@ int main(int argc, char *argv[])
                         strcpy(argbuffer, substr);
                         subarg = strtok_r(argbuffer, "'", &savearg);
                         subarg = strtok_r(savearg, "'", &savearg);
-                        code_count += strlen(subarg)/2;
+                        
                         printf("                                            %s\n",subarg);
+                        sprintf(write_buffer, "DATA   %06X %-6s\n", code_count, subarg);
+                        fputs(write_buffer, obj_file);
+                        code_count += strlen(subarg)/2;
                     }
 
                     if(*substr == 'C')
@@ -477,13 +535,33 @@ int main(int argc, char *argv[])
                         strcpy(argbuffer, substr);
                         subarg = strtok_r(argbuffer, "'", &savearg);
                         subarg = strtok_r(savearg, "'", &savearg);
-                        code_count += strlen(subarg);
+                        
+                        printf("                                        ");
+                        fputs("DATA   ", obj_file);
+                        sprintf(write_buffer, "%06X ", code_count);
+                        fputs(write_buffer, obj_file);
+                        while(*subarg)
+                        {
+                            printf("%X", *subarg);
+                            sprintf(write_buffer, "%X", *subarg);
+                            fputs(write_buffer, obj_file);
+                            subarg++;
+                            code_count++;
+                        }
+                        fputs("\n", obj_file);
+                        printf("\n");
+                       
                     }
+
 
                 }
 
                 if(WORD_state == 1){
                     printf("                                        %06X\n",atoi(substr));
+                    sprintf(write_buffer, "DATA   %06X %06X\n", code_count, atoi(substr));
+                    fputs(write_buffer, obj_file);
+                    code_count+=3;
+
                 }
 
                 if(COMMAND_state_two == 1)
@@ -492,7 +570,7 @@ int main(int argc, char *argv[])
                     while(label_list_temp->next != NULL)
                     {
                         label_list_temp = LL_next_node(label_list_temp);
-                        if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                        if(strcmp(strtok(substr, "\n"), strtok(return_to_user_struct_pointer(label, node, label_list_temp)->label_name, " ")) == 0)
                         {
                             
                             code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
@@ -504,11 +582,20 @@ int main(int argc, char *argv[])
 //------------------------------------------------------------------------------------------------
 
                 if(COMMAND_state == 1){
-                    code_count+=3;
                     printf("                                        %02X%04X\n", code.opcode, code.addres);
-                    sprintf(write_buffer, "%02x", code.opcode);
+                    sprintf(write_buffer, "       %06X %02X%04X\n",code_count,  code.opcode, code.addres);
                     fputs(write_buffer, obj_file);
-                    fputs("\n", obj_file);
+                    segment_count += 6;
+                    //if(segment_count == 60)
+                    //{
+                        //fputs("\n", obj_file);
+                        //segment_count = 0;
+                    //}
+
+                   
+                    
+                    code_count+=3;
+
                 }
 
 
