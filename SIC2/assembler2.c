@@ -18,6 +18,13 @@ typedef struct label{
 	llNode_t node;
 }label;
 
+
+typedef struct sic24_t{
+    unsigned int addres : 16;
+    unsigned int opcode : 8; 
+    }sic24_t;
+
+
 int printf_all_list(llNode_t *head)
 {
 	llNode_t *current = head;
@@ -30,6 +37,7 @@ int printf_all_list(llNode_t *head)
 	printf("end\n");
     return 0;
 }
+
 
 
 
@@ -181,7 +189,14 @@ int main(int argc, char *argv[])
         char temp5[50];
         int code_address = 0;
         llNode_t *label_list = LL_init();
+        llNode_t *label_list_temp;
         label *new = NULL;
+        char program_name[10];
+        int START_address = 0;
+        int END_address = 0;
+        sic24_t obj_code;
+        char *BYTE_temp;
+        int arg_get = 0;
 
 
 
@@ -266,7 +281,7 @@ int main(int argc, char *argv[])
                             if(*temp4 == 'C')
                             {
 
-                                printf("%06X    %s  %d\n", code_address, temp1, strlen(temp5));
+                                printf("%06X    %s\n", code_address, temp1);
                                 
                                 
                                 code_address += strlen(temp5);
@@ -275,7 +290,7 @@ int main(int argc, char *argv[])
                             if(*temp4 == 'X')
                             {
 
-                                printf("%06X    %s  %d\n", code_address, temp1, strlen(temp5));
+                                printf("%06X    %s\n", code_address, temp1);
                                 
                                 code_address += strlen(temp5)/2 + strlen(temp5)%2;
                             }
@@ -301,17 +316,180 @@ int main(int argc, char *argv[])
                         //printf("%d %d %d\n", strlen(temp1), strlen(temp2), strlen(temp3));
 
                     }
+                    else
+                    {
+                        END_address = code_address;
+
+                    }
                 
                 }
                 else
                 {
+                    
+
+
                     code_address += hex_to_dex(temp3);
+                    START_address = code_address;
+                    strcpy(program_name, temp1);
                 }
             }
             
         }
 
+
+
+
         printf_all_list(label_list);
+        printf("H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
+        rewind(ass);
+
+
+
+
+
+        while(fgets(buffer, 50, ass))
+        {   
+            
+            memset(temp1, 0, 50);
+            memset(temp2, 0, 50);
+            memset(temp3, 0, 50);
+            
+
+            sscanf(buffer, "%s %s %s", temp1, temp2, temp3);
+            if(strcmp(temp1, ".") != 0 )
+            {
+                if(strcmp(temp2, "START") != 0)
+                {
+                    if(strcmp(temp1, "END") != 0)
+                    {
+                        
+                        for(int i = 0; i < 26; i++)
+                        {
+                            if(strcmp(temp1, sic[i].command) == 0)
+                            {
+                                obj_code.opcode = sic[i].code;
+
+                                label_list_temp = label_list;
+                                while(label_list_temp->next != NULL)
+                                {
+                                    label_list_temp = LL_next_node(label_list_temp);
+                                    if(strcmp(temp2, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                    {
+                                        obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                        arg_get = 1;
+                                    }
+                             
+                                }
+
+                                if(strcmp(temp1,"RSUB") != 0 && arg_get == 0)
+                                {
+                                    sscanf(temp2, "%[^,],%s",temp4, temp5);
+                                    
+
+                                    label_list_temp = label_list;
+                                    while(label_list_temp->next != NULL)
+                                    {
+                                        label_list_temp = LL_next_node(label_list_temp);
+                                        if(strcmp(temp4, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                        {
+                                            //printf("%s", return_to_user_struct_pointer(label, node, label_list_temp)->label_name);
+                                            obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                            
+                                        }
+                                
+                                    }
+
+                                    if(*temp5 == 'X')
+                                            {
+                                                obj_code.addres += 32768;
+                                            }
+
+
+
+                                }
+
+
+
+                                printf("%02X%04X\n", obj_code.opcode, obj_code.addres);
+                                obj_code.opcode = 0;
+                                obj_code.addres = 0;
+                            } 
+                        }
+
+                        for(int i = 0; i < 26; i++)
+                        {
+                            if(strcmp(temp2, sic[i].command) == 0)
+                            {
+                                obj_code.opcode = sic[i].code;
+
+                                label_list_temp = label_list;
+                                while(label_list_temp->next != NULL)
+                                {
+                                    label_list_temp = LL_next_node(label_list_temp);
+                                    if(strcmp(temp3, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                    {
+                                        obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                    }
+                                }
+                                printf("%02X%04X\n", obj_code.opcode, obj_code.addres);
+                                obj_code.opcode = 0;
+                                obj_code.addres = 0;
+                            } 
+                        }
+
+                        if(strcmp(temp2, "RESB") == 0)
+                        {
+  
+                        }
+
+                        if(strcmp(temp2, "RESW") == 0)
+                        {
+
+                        }
+
+                        if(strcmp(temp2, "BYTE") == 0)
+                        {
+
+
+                            sscanf(temp3, "%[^']'%[^']", temp4, temp5);
+                            
+                            if(*temp4 == 'C')
+                            {
+                                BYTE_temp = temp5;
+                                for(int i = 0 ; i < strlen(temp5) ; i++)
+                                {
+                                    printf("%X", *BYTE_temp);
+                                    BYTE_temp++;
+                                    //(temp5)++;
+                                }
+                                printf("\n");
+
+                            }
+
+                            if(*temp4 == 'X')
+                            {
+                                printf("%s\n", temp5);
+
+                            }
+                            
+                        }
+
+                        if(strcmp(temp2, "WORD") == 0)
+                        {
+                            printf("%06X\n", atoi(temp3));
+
+                        }
+
+
+                    }
+                    
+                
+                }
+            }
+            arg_get = 0;
+
+            
+        }
 
         
 
