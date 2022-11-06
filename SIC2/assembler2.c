@@ -25,6 +25,9 @@ typedef struct sic24_t{
     }sic24_t;
 
 
+
+
+
 int printf_all_list(llNode_t *head)
 {
 	llNode_t *current = head;
@@ -182,6 +185,9 @@ int main(int argc, char *argv[])
         printf("[%d] [target] %s\n\n", i, obj_file_name);
 
         char buffer[50];
+        char obj_temp[100];
+        char obj_cat_temp[60];
+        char record_head_temp[50];
         char temp1[50];
         char temp2[50];
         char temp3[50];
@@ -197,6 +203,8 @@ int main(int argc, char *argv[])
         sic24_t obj_code;
         char *BYTE_temp;
         int arg_get = 0;
+        int T_count = 0;
+        int T_start_count = 0;
 
 
 
@@ -206,6 +214,7 @@ int main(int argc, char *argv[])
             memset(temp1, 0, 50);
             memset(temp2, 0, 50);
             memset(temp3, 0, 50);
+            memset(obj_cat_temp, 0, 50);
             
 
             sscanf(buffer, "%s %s %s", temp1, temp2, temp3);
@@ -220,7 +229,6 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(temp1, sic[i].command) == 0)
                             {
-                                printf("%06X      \n", code_address);
                                 code_address+=3;
                             } 
                         }
@@ -235,14 +243,14 @@ int main(int argc, char *argv[])
                                 new->addres = code_address;
                                 LL_add_tail(&new->node, label_list);
 
-                                printf("%06X    %s\n", code_address, temp1);
+                                //printf("%06X    %s\n", code_address, temp1);
                                 code_address+=3;
                             } 
                         }
 
                         if(strcmp(temp2, "RESB") == 0)
                         {
-                            printf("%06X    %s\n", code_address, temp1);
+                            //printf("%06X    %s\n", code_address, temp1);
                             
 
                             new = malloc(sizeof(label));
@@ -256,7 +264,7 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "RESW") == 0)
                         {
-                            printf("%06X    %s\n", code_address, temp1);
+                            //printf("%06X    %s\n", code_address, temp1);
 
                             new = malloc(sizeof(label));
                             new->label_name = malloc(strlen(temp1));
@@ -281,7 +289,7 @@ int main(int argc, char *argv[])
                             if(*temp4 == 'C')
                             {
 
-                                printf("%06X    %s\n", code_address, temp1);
+                                //printf("%06X    %s\n", code_address, temp1);
                                 
                                 
                                 code_address += strlen(temp5);
@@ -290,7 +298,7 @@ int main(int argc, char *argv[])
                             if(*temp4 == 'X')
                             {
 
-                                printf("%06X    %s\n", code_address, temp1);
+                                //printf("%06X    %s\n", code_address, temp1);
                                 
                                 code_address += strlen(temp5)/2 + strlen(temp5)%2;
                             }
@@ -306,15 +314,9 @@ int main(int argc, char *argv[])
                             LL_add_tail(&new->node, label_list);
 
 
-                            printf("%06X    %s\n", code_address, temp1);
+                            //printf("%06X    %s\n", code_address, temp1);
                             code_address += 3;
                         }
-
-
-
-                        //printf("%s %s %s\n", temp1, temp2, temp3);
-                        //printf("%d %d %d\n", strlen(temp1), strlen(temp2), strlen(temp3));
-
                     }
                     else
                     {
@@ -338,10 +340,11 @@ int main(int argc, char *argv[])
 
 
 
-
-        printf_all_list(label_list);
         printf("H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
+        sprintf(record_head_temp, "H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
+        fputs(record_head_temp, obj_file);
         rewind(ass);
+        code_address = 0;
 
 
 
@@ -367,6 +370,7 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(temp1, sic[i].command) == 0)
                             {
+                                
                                 obj_code.opcode = sic[i].code;
 
                                 label_list_temp = label_list;
@@ -408,9 +412,48 @@ int main(int argc, char *argv[])
 
                                 }
 
+                                if(T_count + 3 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
 
 
-                                printf("%02X%04X\n", obj_code.opcode, obj_code.addres);
+
+                                if(T_count == 0)
+                                {
+                                    sprintf(obj_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    T_start_count = code_address;
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    strcat(obj_temp, obj_cat_temp);
+                                }
+
+                                T_count += 3;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+                                code_address+=3;
                                 obj_code.opcode = 0;
                                 obj_code.addres = 0;
                             } 
@@ -420,6 +463,7 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(temp2, sic[i].command) == 0)
                             {
+                                
                                 obj_code.opcode = sic[i].code;
 
                                 label_list_temp = label_list;
@@ -431,7 +475,49 @@ int main(int argc, char *argv[])
                                         obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
                                     }
                                 }
-                                printf("%02X%04X\n", obj_code.opcode, obj_code.addres);
+
+
+                                if(T_count + 3 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;
+                                    sprintf(obj_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    strcat(obj_temp, obj_cat_temp);
+                                }
+
+                                T_count += 3;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+
+                                code_address+=3;
                                 obj_code.opcode = 0;
                                 obj_code.addres = 0;
                             } 
@@ -439,11 +525,39 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "RESB") == 0)
                         {
+                            
+                            if(T_count + atoi(temp3) > 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);
+                                T_count = 0;
+                            }
+
+                            if(T_count == 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);                                    
+                                T_count = 0;
+                            }
+                            code_address += atoi(temp3);
   
                         }
 
                         if(strcmp(temp2, "RESW") == 0)
                         {
+                            code_address += 3*atoi(temp3);
 
                         }
 
@@ -455,20 +569,109 @@ int main(int argc, char *argv[])
                             
                             if(*temp4 == 'C')
                             {
-                                BYTE_temp = temp5;
-                                for(int i = 0 ; i < strlen(temp5) ; i++)
+                                if(T_count + strlen(temp5) > 30)
                                 {
-                                    printf("%X", *BYTE_temp);
-                                    BYTE_temp++;
-                                    //(temp5)++;
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
                                 }
-                                printf("\n");
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;
+                                    strcat(obj_temp, "^");                                   
+                                    //sprintf(obj_temp, "^%s", temp5);
+                                    BYTE_temp = temp5;
+                                    for(int i = 0 ; i < strlen(temp5) ; i++)
+                                    {
+                                        sprintf(obj_cat_temp, "%X" , *BYTE_temp);
+                                        strcat(obj_temp, obj_cat_temp);
+                                        BYTE_temp++;
+                                    
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    strcat(obj_temp, "^");
+                                    BYTE_temp = temp5;
+                                    for(int i = 0 ; i < strlen(temp5) ; i++)
+                                    {
+                                        sprintf(obj_cat_temp, "%X" , *BYTE_temp);
+                                        strcat(obj_temp, obj_cat_temp);
+                                        BYTE_temp++;
+                                    
+                                    }
+                                }
+
+                                T_count += strlen(temp5);
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+                                code_address += strlen(temp5);
 
                             }
 
                             if(*temp4 == 'X')
                             {
-                                printf("%s\n", temp5);
+                                if(T_count + strlen(temp5)/2 + strlen(temp5)%2 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;                                  
+                                    sprintf(obj_temp, "^%s", temp5);         
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%s", temp5);
+                                    strcat(obj_temp, obj_cat_temp);
+
+                                }
+
+                                T_count += strlen(temp5)/2 + strlen(temp5)%2;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+                                code_address += strlen(temp5)/2 + strlen(temp5)%2;
 
                             }
                             
@@ -476,8 +679,46 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "WORD") == 0)
                         {
-                            printf("%06X\n", atoi(temp3));
+                            if(T_count + 3 > 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
 
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);
+                                T_count = 0;
+                            }
+
+                            if(T_count == 0)
+                            {
+                                T_start_count = code_address;
+                                sprintf(obj_temp, "^%06X", atoi(temp3));
+                            }
+                            else
+                            {
+                                sprintf(obj_cat_temp, "^%06X", atoi(temp3));
+                                strcat(obj_temp, obj_cat_temp);
+                            }
+
+                            T_count += 3;
+
+                            if(T_count == 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);                                    
+                                T_count = 0;
+                            }
+
+                            code_address += 3;
                         }
 
 
@@ -485,11 +726,31 @@ int main(int argc, char *argv[])
                     
                 
                 }
+                else
+                {
+                    code_address += hex_to_dex(temp3);
+                }
             }
             arg_get = 0;
-
+            
             
         }
+
+        if(strcmp(obj_temp, "") != 0)
+        {
+            printf("T^%06X^%02X", T_start_count, T_count);
+            sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+            fputs(record_head_temp, obj_file);
+
+            printf("%s\n", obj_temp);
+            fputs(obj_temp, obj_file);
+            fputs("\n", obj_file);
+        }
+
+        printf("E^%06X", START_address);
+        sprintf(record_head_temp, "E^%06X", START_address);
+        fputs(record_head_temp, obj_file);
+        
 
         
 
