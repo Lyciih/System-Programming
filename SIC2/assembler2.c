@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include"linked_list.h"
 
 
 typedef struct opcode{
@@ -10,6 +11,25 @@ typedef struct opcode{
 
 
 opcode sic[26];
+
+typedef struct label{
+	char *label_name;
+    int addres;
+	llNode_t node;
+}label;
+
+int printf_all_list(llNode_t *head)
+{
+	llNode_t *current = head;
+	while(current->next != NULL )
+	{
+		current = current->next;
+		printf("%-8s " , return_to_user_struct_pointer(label, node, current)->label_name);
+        printf("%X\n" , return_to_user_struct_pointer(label, node, current)->addres);
+	}
+	printf("end\n");
+    return 0;
+}
 
 
 
@@ -160,6 +180,8 @@ int main(int argc, char *argv[])
         char temp4[50];
         char temp5[50];
         int code_address = 0;
+        llNode_t *label_list = LL_init();
+        label *new = NULL;
 
 
 
@@ -192,6 +214,12 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(temp2, sic[i].command) == 0)
                             {
+                                new = malloc(sizeof(label));
+                                new->label_name = malloc(strlen(temp1));
+                                strcpy(new->label_name, temp1);
+                                new->addres = code_address;
+                                LL_add_tail(&new->node, label_list);
+
                                 printf("%06X    %s\n", code_address, temp1);
                                 code_address+=3;
                             } 
@@ -200,23 +228,46 @@ int main(int argc, char *argv[])
                         if(strcmp(temp2, "RESB") == 0)
                         {
                             printf("%06X    %s\n", code_address, temp1);
+                            
+
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
                             code_address += atoi(temp3);
                         }
 
                         if(strcmp(temp2, "RESW") == 0)
                         {
                             printf("%06X    %s\n", code_address, temp1);
+
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
                             code_address += 3*atoi(temp3);
                         }
 
                         if(strcmp(temp2, "BYTE") == 0)
                         {
+
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
                             sscanf(temp3, "%[^']'%[^']", temp4, temp5);
                             
                             if(*temp4 == 'C')
                             {
 
                                 printf("%06X    %s  %d\n", code_address, temp1, strlen(temp5));
+                                
                                 
                                 code_address += strlen(temp5);
                             }
@@ -233,6 +284,13 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "WORD") == 0)
                         {
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
+
                             printf("%06X    %s\n", code_address, temp1);
                             code_address += 3;
                         }
@@ -252,6 +310,8 @@ int main(int argc, char *argv[])
             }
             
         }
+
+        printf_all_list(label_list);
 
         
 
