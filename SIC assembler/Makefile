@@ -7,9 +7,7 @@ assembler:liblinked_list.a assembler.c
 
 .PHONY: clean
 clean:
-	rm -f *.o
-	rm -f *.exe
-	rm -f *.out
+	rm -f *.o *.exe *.out assembler
 
 .PHONY: dump
 dump:
