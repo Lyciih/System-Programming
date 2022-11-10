@@ -59,7 +59,7 @@ int exponent_Int(const int base, int n)
     return p;
 }
 
-//將讀取地的字串視為16進位，並轉換為10進位數字的函數
+//將讀取的字串視為16進位，並轉換為10進位數字的函數
 int hex_to_dex(char *hex)
 {
     char *char_temp = (char *)malloc(strlen(hex));
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
                                 //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + 3 > 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -420,7 +420,7 @@ int main(int argc, char *argv[])
                                 //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
                                 //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + 3 > 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -490,7 +490,7 @@ int main(int argc, char *argv[])
                                 //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
                             //如果片段加上這次的opject code會超過30個Byte
                             if(T_count + atoi(temp3) > 30)
                             {
-                                //將翻譯完的這行命令接在片段的buffer之後
+                                //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
@@ -532,7 +532,7 @@ int main(int argc, char *argv[])
                             //如果片段剛好裝滿30個Byte
                             if(T_count == 30)
                             {
-                                //將翻譯完的這行命令接在片段的buffer之後
+                                //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
                                 //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + strlen(temp5) > 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -605,7 +605,7 @@ int main(int argc, char *argv[])
                                 //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -625,7 +625,7 @@ int main(int argc, char *argv[])
                                 //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + strlen(temp5)/2 + strlen(temp5)%2 > 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -654,7 +654,7 @@ int main(int argc, char *argv[])
                                 //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
-                                    //將翻譯完的這行命令接在片段的buffer之後
+                                    //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
@@ -676,7 +676,7 @@ int main(int argc, char *argv[])
                             //如果片段加上這次的opject code會超過30個Byte
                             if(T_count + 3 > 30)
                             {
-                                //將翻譯完的這行命令接在片段的buffer之後
+                                //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
@@ -705,7 +705,7 @@ int main(int argc, char *argv[])
                             //如果片段剛好裝滿30個Byte
                             if(T_count == 30)
                             {
-                                //將翻譯完的這行命令接在片段的buffer之後
+                                //顯示片段起始訊息，同時在輸出片段到檔案前先把起始訊息寫進檔案中一行的起頭
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
