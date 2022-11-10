@@ -2,27 +2,30 @@
 #include<stdlib.h>
 #include<string.h>
 #include"linked_list.h"
-#include<math.h>
 
- 
-typedef struct sic24_t{
-    unsigned int addres : 16;
-    unsigned int opcode : 8; 
-    }sic24_t;
-
-
+//存放指令和對應opcode的結構，用來查詢比對
 typedef struct opcode{
     char *command;
     int code;
 }opcode;
 
+//總共有26個指令
+opcode sic[26];
 
+//紀錄掃描到的標籤及地址的單向鏈結串列的節點
 typedef struct label{
 	char *label_name;
     int addres;
 	llNode_t node;
 }label;
 
+//暫存object code的結構(使用位域)
+typedef struct sic24_t{
+    unsigned int addres : 16;
+    unsigned int opcode : 8; 
+    }sic24_t;
+
+//顯示一個單向鏈結串列所有節點的資料(用在開發中途測試串列是否正常運作)
 int printf_all_list(llNode_t *head)
 {
 	llNode_t *current = head;
@@ -36,6 +39,9 @@ int printf_all_list(llNode_t *head)
     return 0;
 }
 
+
+
+//將指數乘開的函數
 int exponent_Int(const int base, int n)
 {
     int p = base;
@@ -53,6 +59,7 @@ int exponent_Int(const int base, int n)
     return p;
 }
 
+//將讀取地的字串視為16進位，並轉換為10進位數字的函數
 int hex_to_dex(char *hex)
 {
     char *char_temp = (char *)malloc(strlen(hex));
@@ -79,39 +86,9 @@ int hex_to_dex(char *hex)
 }
 
 
-//將目標檔名作為命令列參數傳進main裡面
 int main(int argc, char *argv[])
 {
-
-//*******************************   第一階段 檔案處理    *********************************************//
-
-    //依序組譯每個來源檔，argc代表參數(來源檔)的數量，第0個是main本身的檔名，不取用
-    for (int i = 1; i < argc; i++) 
-    {  
-        //以唯讀模式開啟來源檔
-        FILE *ass = fopen(argv[i],"r");
-        
-        //顯示當前處理的來源檔名
-        printf("[%d] [source] %s\n", i, argv[i]);
-     
-        //以'.'切割檔名
-        char *obj_file_name = strtok(argv[i], ".");
-        //宣告要加在檔名後方的副檔名字串
-        char *obj= ".o";
-
-        //將目標檔名後方接上.o副檔名       
-        strcat(obj_file_name, obj);
-        //以目標檔名開啟新檔
-        FILE *obj_file = fopen(obj_file_name,"w");
-
-        
-        
-        //顯示目標檔名
-        printf("[%d] [target] %s\n\n", i, obj_file_name);
-
-//*******************************   第二階段 開始編譯    *********************************************//
-        opcode sic[26];
-        sic[0].command = "ADD";
+    sic[0].command = "ADD";
         sic[0].code = 24;
 
         sic[1].command = "DIV";
@@ -188,444 +165,543 @@ int main(int argc, char *argv[])
         
         sic[25].command = "TD";
         sic[25].code = 224;
-//因為編譯過程會用到雙層迴圈( while + switch )，為了能在處理完後用return回來，把編譯過程寫成副程式 translter
-        //translter(ass, obj_file);
+
+//*******************************   第一階段 檔案處理    *********************************************//
 
 
-        sic24_t code;
+    for (int i = 1; i < argc; i++) 
+    {  
 
+        FILE *ass = fopen(argv[i],"r");
+        printf("[%d] [source] %s\n", i, argv[i]);
+        char *obj_file_name = strtok(argv[i], ".");
+        char *obj= ".o";    
+        strcat(obj_file_name, obj);
+        FILE *obj_file = fopen(obj_file_name,"w");
+        printf("[%d] [target] %s\n\n", i, obj_file_name);
+
+        char buffer[50];
+        char obj_temp[100];
+        char obj_cat_temp[60];
+        char record_head_temp[50];
+        char temp1[50];
+        char temp2[50];
+        char temp3[50];
+        char temp4[50];
+        char temp5[50];
+        int code_address = 0;
         llNode_t *label_list = LL_init();
         llNode_t *label_list_temp;
-
-        int line_count = 1;
-        int code_count = 0;
-        char buffer[50];
-        char argbuffer[50];
-        char write_buffer[50];
-        char *saveptr = NULL;
-        char *substr = NULL;
-        char *savearg = NULL;
-        char *subarg = NULL;
-        //char program_name[50];
-        //int total_code = 0;
-        //int start_code = 0;
-        int segment_count = 0;
-        
-
- 
- 
-
-
-        int START_state = 0; 
-        int COMMAND_state = 0;
-        int COMMAND_state_two = 0;
-        int RESW_state = 0;
-        int RESB_state = 0;
-        int WORD_state = 0;
-        int BYTE_state = 0;
-        int ARG_state_one= 0;
+        label *new = NULL;
+        char program_name[10];
+        int START_address = 0;
+        int END_address = 0;
+        sic24_t obj_code;
+        char *BYTE_temp;
         int arg_get = 0;
-        int RSUB_state = 0;
-        label *new;
-        label * free_top_temp;
-        llNode_t * free_temp;
-
-
-        while(fgets(buffer, 50, ass))
-        {
-            
-
-            if(*buffer != '.')
-            {
-//------------------------------------------------------------------------------------------------               
-
-                substr = strtok_r(buffer, " ", &saveptr);
-                for(int i = 0; i < 26; i++)
-                {
-                    if(strcmp(substr, sic[i].command) == 0)
-                    {
-                        COMMAND_state = 1;
-                        code.opcode = sic[i].code;
-                    } 
-                }
-
-                if(COMMAND_state == 0)
-                {
-                    new = malloc(sizeof(label));
-                    new->label_name = malloc(strlen(substr));
-                    strcpy(new->label_name, substr);
-                    new->addres = code_count;
-                    LL_add_tail(&new->node, label_list);
-                }
-//------------------------------------------------------------------------------------------------
-
-
-
-                substr = strtok_r(saveptr, " ", &saveptr);
-                if(substr != NULL)
-                {
-                    for(int i = 0; i < 26; i++)
-                    {
-                        if(strcmp(substr, sic[i].command) == 0)
-                        {
-                            COMMAND_state = 1;
-                            code.opcode = sic[i].code;
-                        }
-                    }
-                }
-                if(strcmp(substr, "START") == 0){
-                    
-                    START_state = 1;
-                }
-                else if(strcmp(substr, "BYTE") == 0){
-                    BYTE_state = 1;
-                }
-                else if(strcmp(substr, "WORD") == 0){
-                    WORD_state = 1;
-                    code_count+=3;
-                }
-                else if(strcmp(substr, "RESW") == 0){
-                    RESW_state = 1;
-                }
-                else if(strcmp(substr, "RESB") == 0){
-                    RESB_state = 1;
-                }
-//------------------------------------------------------------------------------------------------
-
-
-
-                substr = strtok_r(saveptr, " ", &saveptr);
-
-                if(START_state == 1){
-                    code_count += hex_to_dex(substr);
-                    //start_code = code_count;
-                }
-
-                if(RESW_state == 1){
-                    code_count += 3*atoi(substr);
-                }
-
-                if(RESB_state == 1){
-                    code_count += atoi(substr);
-                }
-
-                if(BYTE_state == 1){
-                    if(*substr == 'X')
-                    {
-                        strcpy(argbuffer, substr);
-                        subarg = strtok_r(argbuffer, "'", &savearg);
-                        subarg = strtok_r(savearg, "'", &savearg);
-                        code_count += strlen(subarg)/2;
-                    }
-
-                    if(*substr == 'C')
-                    {
-                        strcpy(argbuffer, substr);
-                        subarg = strtok_r(argbuffer, "'", &savearg);
-                        subarg = strtok_r(savearg, "'", &savearg);
-                        code_count += strlen(subarg);
-                    }
-
-                }
-
-
-//------------------------------------------------------------------------------------------------
-
-                if(COMMAND_state == 1){
-                    code_count+=3;
-                }
-
-
-                
-                code.opcode = 0;
-                code.addres = 0;                
-                START_state = 0;
-                COMMAND_state = 0;
-                RESW_state = 0;
-                RESB_state = 0;
-                WORD_state = 0;
-                BYTE_state = 0;
-                line_count++;
-            }
-        }
-        line_count = 1;
-
-        //total_code = code_count - start_code; 
-        code_count = 0;
-
-
-
-
-
-
-
-
-
-
-        printf_all_list(label_list);
-        rewind(ass);
-
-
-
-
-
-
-
-
-
-
-
-
-
+        int T_count = 0;
+        int T_start_count = 0;
+        llNode_t *free_temp;
+        label *free_top_temp;
 
 
 
         while(fgets(buffer, 50, ass))
-        {
+        {             
+            memset(temp1, 0, 50);
+            memset(temp2, 0, 50);
+            memset(temp3, 0, 50);
+            memset(obj_cat_temp, 0, 50);
             
-
-            if(*buffer != '.')
+            sscanf(buffer, "%s %s %s", temp1, temp2, temp3);
+            if(strcmp(temp1, ".") != 0 )
             {
-                printf("________________________________________________\n");
-                printf("%-5d  %-5X  %s", line_count, code_count, buffer);
-                printf("--------------------------------------\n");
-//------------------------------------------------------------------------------------------------               
-
-                substr = strtok_r(buffer, " ", &saveptr);
-                //printf("%-8s", substr);
-
-                for(int i = 0; i < 26; i++)
+                if(strcmp(temp2, "START") != 0)
                 {
-                    if(strcmp(substr, sic[i].command) == 0)
+                    if(strcmp(temp1, "END") != 0)
                     {
-                        COMMAND_state = 1;
-                        code.opcode = sic[i].code;
-                        if(!strcmp(sic[i].command, "RSUB"))
+                        
+                        for(int i = 0; i < 26; i++)
                         {
-                            RSUB_state = 1;
-                        }
-                    } 
-                }
-
-                if(COMMAND_state == 1)
-                {
-                    ARG_state_one = 1;
-                }
-
-
-//------------------------------------------------------------------------------------------------
-
-
-                substr = strtok_r(saveptr, " ", &saveptr);
-                if(substr != NULL)
-                {
-                    //printf("%-8s", substr);
-                    for(int i = 0; i < 26; i++)
-                    {
-                        if(strcmp(substr, sic[i].command) == 0)
-                        {
-                            COMMAND_state = 1;
-                            COMMAND_state_two = 1;
-                            code.opcode = sic[i].code;
-                        }
-                    }
-                }
-                //printf("\n");
-                if(strcmp(substr, "START") == 0){
-
-                    //sprintf(write_buffer, "%s\n", subarg);
-                    //fputs("H ", obj_file);
-                    //sprintf(program_name, "%-6s ", return_to_user_struct_pointer(label, node, label_list->next)->label_name);
-                    //fputs(program_name, obj_file);
-                    START_state = 1;
-                }
-                else if(strcmp(substr, "BYTE") == 0){
-                    BYTE_state = 1;
-                }
-                else if(strcmp(substr, "WORD") == 0){
-                    WORD_state = 1;
-
-                }
-                else if(strcmp(substr, "RESW") == 0){
-                    RESW_state = 1;
-                }
-                else if(strcmp(substr, "RESB") == 0){
-                    RESB_state = 1;
-                }
-
-
-                if(ARG_state_one == 1  && RSUB_state == 0)
-                {
-                    label_list_temp = label_list;
-                    while(label_list_temp->next != NULL)
-                    {
-                        label_list_temp = LL_next_node(label_list_temp);
-                        if(strcmp(strtok(substr, "\n"), strtok(return_to_user_struct_pointer(label, node, label_list_temp)->label_name, " ")) == 0)
-                        {
-                            code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
-                            arg_get = 1;
-                        }
-                    }
-                    
-                    if(!arg_get)
-                    {
-                        substr = strtok_r(substr, ",", &saveptr);
-                        label_list_temp = label_list;
-                        while(label_list_temp->next != NULL)
-                        {
-                            label_list_temp = LL_next_node(label_list_temp);
-                            if(strcmp(substr, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                            if(strcmp(temp1, sic[i].command) == 0)
                             {
-                                code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                code_address+=3;
+                            } 
+                        }
+
+                        for(int i = 0; i < 26; i++)
+                        {
+                            if(strcmp(temp2, sic[i].command) == 0)
+                            {
+                                new = malloc(sizeof(label));
+                                new->label_name = malloc(strlen(temp1));
+                                strcpy(new->label_name, temp1);
+                                new->addres = code_address;
+                                LL_add_tail(&new->node, label_list);
+
+                                code_address+=3;
+                            } 
+                        }
+
+                        if(strcmp(temp2, "RESB") == 0)
+                        {
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
+                            code_address += atoi(temp3);
+                        }
+
+                        if(strcmp(temp2, "RESW") == 0)
+                        {
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
+                            code_address += 3*atoi(temp3);
+                        }
+
+                        if(strcmp(temp2, "BYTE") == 0)
+                        {
+
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
+                            sscanf(temp3, "%[^']'%[^']", temp4, temp5);
+                            
+                            if(*temp4 == 'C')
+                            {
+                                code_address += strlen(temp5);
                             }
+
+                            if(*temp4 == 'X')
+                            {                             
+                                code_address += strlen(temp5)/2 + strlen(temp5)%2;
+                            }
+                            
                         }
-                        substr = strtok_r(saveptr, " ", &saveptr);
-                        if(*substr == 'X')
+
+                        if(strcmp(temp2, "WORD") == 0)
                         {
-                            code.addres +=  32768;
+                            new = malloc(sizeof(label));
+                            new->label_name = malloc(strlen(temp1));
+                            strcpy(new->label_name, temp1);
+                            new->addres = code_address;
+                            LL_add_tail(&new->node, label_list);
+
+                            code_address += 3;
                         }
                     }
-                    ARG_state_one = 0;
-                    
-                }
-//------------------------------------------------------------------------------------------------
-
-
-
-                substr = strtok_r(saveptr, " ", &saveptr);
-                if(substr != NULL){
-                    //printf("%-8s", substr);
-                }
-                //printf("\n");
-
-
-                if(START_state == 1){
-                    printf("%d\n", hex_to_dex(substr));
-                    //sprintf(write_buffer, "%06X %06X\n", hex_to_dex(substr), total_code);
-                    //fputs(write_buffer, obj_file);
-                    code_count += hex_to_dex(substr);
-
-                    
-                }
-
-                if(RESW_state == 1){
-                    code_count += 3*atoi(substr);
-                }
-
-                if(RESB_state == 1){
-                    code_count += atoi(substr);
-
-                }
-
-                if(BYTE_state == 1){
-                    if(*substr == 'X')
+                    else
                     {
-                        strcpy(argbuffer, substr);
-                        subarg = strtok_r(argbuffer, "'", &savearg);
-                        subarg = strtok_r(savearg, "'", &savearg);
-                        
-                        printf("                                            %s\n",subarg);
-                        sprintf(write_buffer, "DATA   %06X %-6s\n", code_count, subarg);
-                        fputs(write_buffer, obj_file);
-                        code_count += strlen(subarg)/2;
+                        END_address = code_address;
+
                     }
-
-                    if(*substr == 'C')
-                    {
-                        strcpy(argbuffer, substr);
-                        subarg = strtok_r(argbuffer, "'", &savearg);
-                        subarg = strtok_r(savearg, "'", &savearg);
-                        
-                        printf("                                        ");
-                        fputs("DATA   ", obj_file);
-                        sprintf(write_buffer, "%06X ", code_count);
-                        fputs(write_buffer, obj_file);
-                        while(*subarg)
-                        {
-                            printf("%X", *subarg);
-                            sprintf(write_buffer, "%X", *subarg);
-                            fputs(write_buffer, obj_file);
-                            subarg++;
-                            code_count++;
-                        }
-                        fputs("\n", obj_file);
-                        printf("\n");
-                       
-                    }
-
-
+                
                 }
-
-                if(WORD_state == 1){
-                    printf("                                        %06X\n",atoi(substr));
-                    sprintf(write_buffer, "DATA   %06X %06X\n", code_count, atoi(substr));
-                    fputs(write_buffer, obj_file);
-                    code_count+=3;
-
-                }
-
-                if(COMMAND_state_two == 1)
+                else
                 {
-                    label_list_temp = label_list;
-                    while(label_list_temp->next != NULL)
+                    
+
+
+                    code_address += hex_to_dex(temp3);
+                    START_address = code_address;
+                    strcpy(program_name, temp1);
+                }
+            }
+            
+        }
+
+
+        printf("H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
+        sprintf(record_head_temp, "H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
+        fputs(record_head_temp, obj_file);
+        rewind(ass);
+        code_address = 0;
+
+
+        while(fgets(buffer, 50, ass))
+        {   
+            
+            memset(temp1, 0, 50);
+            memset(temp2, 0, 50);
+            memset(temp3, 0, 50);
+            
+
+            sscanf(buffer, "%s %s %s", temp1, temp2, temp3);
+            if(strcmp(temp1, ".") != 0 )
+            {
+                if(strcmp(temp2, "START") != 0)
+                {
+                    if(strcmp(temp1, "END") != 0)
                     {
-                        label_list_temp = LL_next_node(label_list_temp);
-                        if(strcmp(strtok(substr, "\n"), strtok(return_to_user_struct_pointer(label, node, label_list_temp)->label_name, " ")) == 0)
+                        for(int i = 0; i < 26; i++)
+                        {
+                            if(strcmp(temp1, sic[i].command) == 0)
+                            { 
+                                obj_code.opcode = sic[i].code;
+                                label_list_temp = label_list;
+
+                                while(label_list_temp->next != NULL)
+                                {
+                                    label_list_temp = LL_next_node(label_list_temp);
+                                    if(strcmp(temp2, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                    {
+                                        obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                        arg_get = 1;
+                                    }
+                             
+                                }
+
+                                if(strcmp(temp1,"RSUB") != 0 && arg_get == 0)
+                                {
+                                    sscanf(temp2, "%[^,],%s",temp4, temp5);
+                                    
+                                    label_list_temp = label_list;
+                                    while(label_list_temp->next != NULL)
+                                    {
+                                        label_list_temp = LL_next_node(label_list_temp);
+                                        if(strcmp(temp4, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                        {
+                                            obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                        }
+                                
+                                    }
+
+                                    if(*temp5 == 'X')
+                                    {
+                                        obj_code.addres += 32768;
+                                    }
+                                }
+
+                                if(T_count + 3 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    sprintf(obj_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    T_start_count = code_address;
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    strcat(obj_temp, obj_cat_temp);
+                                }
+
+                                T_count += 3;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+                                code_address+=3;
+                                obj_code.opcode = 0;
+                                obj_code.addres = 0;
+                            } 
+                        }
+
+                        for(int i = 0; i < 26; i++)
+                        {
+                            if(strcmp(temp2, sic[i].command) == 0)
+                            {
+                                
+                                obj_code.opcode = sic[i].code;
+
+                                label_list_temp = label_list;
+                                while(label_list_temp->next != NULL)
+                                {
+                                    label_list_temp = LL_next_node(label_list_temp);
+                                    if(strcmp(temp3, return_to_user_struct_pointer(label, node, label_list_temp)->label_name) == 0)
+                                    {
+                                        obj_code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                                    }
+                                }
+
+
+                                if(T_count + 3 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;
+                                    sprintf(obj_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%02X%04X", obj_code.opcode, obj_code.addres);
+                                    strcat(obj_temp, obj_cat_temp);
+                                }
+
+                                T_count += 3;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+
+                                code_address+=3;
+                                obj_code.opcode = 0;
+                                obj_code.addres = 0;
+                            } 
+                        }
+
+                        if(strcmp(temp2, "RESB") == 0)
                         {
                             
-                            code.addres = return_to_user_struct_pointer(label, node, label_list_temp)->addres;
+                            if(T_count + atoi(temp3) > 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);
+                                T_count = 0;
+                            }
+
+                            if(T_count == 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);                                    
+                                T_count = 0;
+                            }
+                            code_address += atoi(temp3);
+  
                         }
-                    }  
+
+                        if(strcmp(temp2, "RESW") == 0)
+                        {
+                            code_address += 3*atoi(temp3);
+                        }
+
+                        if(strcmp(temp2, "BYTE") == 0)
+                        {
+                            sscanf(temp3, "%[^']'%[^']", temp4, temp5);
+                            
+                            if(*temp4 == 'C')
+                            {
+                                if(T_count + strlen(temp5) > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;
+                                    strcat(obj_temp, "^");                                   
+                                    BYTE_temp = temp5;
+                                    for(int i = 0 ; i < strlen(temp5) ; i++)
+                                    {
+                                        sprintf(obj_cat_temp, "%X" , *BYTE_temp);
+                                        strcat(obj_temp, obj_cat_temp);
+                                        BYTE_temp++;
+                                    }      
+                                }
+                                else
+                                {
+                                    strcat(obj_temp, "^");
+                                    BYTE_temp = temp5;
+                                    for(int i = 0 ; i < strlen(temp5) ; i++)
+                                    {
+                                        sprintf(obj_cat_temp, "%X" , *BYTE_temp);
+                                        strcat(obj_temp, obj_cat_temp);
+                                        BYTE_temp++;
+                                    
+                                    }
+                                }
+
+                                T_count += strlen(temp5);
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+                                code_address += strlen(temp5);
+                            }
+
+                            if(*temp4 == 'X')
+                            {
+                                if(T_count + strlen(temp5)/2 + strlen(temp5)%2 > 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);
+                                    T_count = 0;
+                                }
+
+                                if(T_count == 0)
+                                {
+                                    T_start_count = code_address;                                  
+                                    sprintf(obj_temp, "^%s", temp5);         
+                                }
+                                else
+                                {
+                                    sprintf(obj_cat_temp, "^%s", temp5);
+                                    strcat(obj_temp, obj_cat_temp);
+                                }
+
+                                T_count += strlen(temp5)/2 + strlen(temp5)%2;
+
+                                if(T_count == 30)
+                                {
+                                    printf("T^%06X^%02X", T_start_count, T_count);
+                                    sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                    fputs(record_head_temp, obj_file);
+
+                                    printf("%s\n", obj_temp);
+                                    fputs(obj_temp, obj_file);
+                                    fputs("\n", obj_file);
+                                    memset(obj_temp, 0, 100);                                    
+                                    T_count = 0;
+                                }
+                                code_address += strlen(temp5)/2 + strlen(temp5)%2;
+                            }
+                            
+                        }
+
+                        if(strcmp(temp2, "WORD") == 0)
+                        {
+                            if(T_count + 3 > 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);
+                                T_count = 0;
+                            }
+
+                            if(T_count == 0)
+                            {
+                                T_start_count = code_address;
+                                sprintf(obj_temp, "^%06X", atoi(temp3));
+                            }
+                            else
+                            {
+                                sprintf(obj_cat_temp, "^%06X", atoi(temp3));
+                                strcat(obj_temp, obj_cat_temp);
+                            }
+
+                            T_count += 3;
+
+                            if(T_count == 30)
+                            {
+                                printf("T^%06X^%02X", T_start_count, T_count);
+                                sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+                                fputs(record_head_temp, obj_file);
+
+                                printf("%s\n", obj_temp);
+                                fputs(obj_temp, obj_file);
+                                fputs("\n", obj_file);
+                                memset(obj_temp, 0, 100);                                    
+                                T_count = 0;
+                            }
+                            code_address += 3;
+                        }
+                    }
                 }
-
-
-//------------------------------------------------------------------------------------------------
-
-                if(COMMAND_state == 1){
-                    printf("                                        %02X%04X\n", code.opcode, code.addres);
-                    sprintf(write_buffer, "       %06X %02X%04X\n",code_count,  code.opcode, code.addres);
-                    fputs(write_buffer, obj_file);
-                    segment_count += 6;
-                    //if(segment_count == 60)
-                    //{
-                        //fputs("\n", obj_file);
-                        //segment_count = 0;
-                    //}
-
-                   
-                    
-                    code_count+=3;
-
+                else
+                {
+                    code_address += hex_to_dex(temp3);
                 }
-
-
-                
-                code.opcode = 0;
-                code.addres = 0;                
-                START_state = 0;
-                COMMAND_state = 0;
-                COMMAND_state_two = 0;
-                RESW_state = 0;
-                RESB_state = 0;
-                WORD_state = 0;
-                BYTE_state = 0;
-                ARG_state_one = 0;
-                arg_get = 0;
-                RSUB_state = 0;
-                line_count++;
             }
+            arg_get = 0;  
         }
 
+        if(strcmp(obj_temp, "") != 0)
+        {
+            printf("T^%06X^%02X", T_start_count, T_count);
+            sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
+            fputs(record_head_temp, obj_file);
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+            printf("%s\n", obj_temp);
+            fputs(obj_temp, obj_file);
+            fputs("\n", obj_file);
+        }
 
-//*****************************   第三階段 收尾並關閉所有檔案    **************************************//
+        printf("E^%06X\n", START_address);
+        sprintf(record_head_temp, "E^%06X", START_address);
+        fputs(record_head_temp, obj_file);
         
-        //將來源檔與目標檔關起來
         fclose(ass);
         fclose(obj_file);
 
-         //釋放之前申請的空間
         while(!LL_isEmpty(label_list))
 	    {
             free_temp = LL_next_node(label_list);
@@ -639,9 +715,6 @@ int main(int argc, char *argv[])
             free_temp = NULL;
 	    }
 	    LL_free_head(label_list);
-
-
     }
-
-    printf("\n");  
+    
 }

@@ -12,7 +12,7 @@ ENDFIL  LDA     EOF
         STA     LENGTH
         JSUB    WRREC
         LDL     RETADR
-        RSUB    
+        RSUB
 EOF     BYTE    C'EOF'
 THREE   WORD    3
 ZERO    WORD    0
@@ -33,7 +33,7 @@ RLOOP   TD      INPUT
         TIX     MAXLEN
         JLT     RLOOP
 EXIT    STX     LENGTH
-        RSUB 
+        RSUB
 INPUT   BYTE    X'F1'
 MAXLEN  WORD    4096
 . 
@@ -46,6 +46,6 @@ WLOOP   TD      OUTPUT
         WD      OUTPUT
         TIX     LENGTH
         JLT     WLOOP
-        RSUB    
+        RSUB
 OUTPUT  BYTE    X'05'
 END     FIRST
