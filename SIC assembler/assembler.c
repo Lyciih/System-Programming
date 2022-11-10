@@ -85,9 +85,10 @@ int hex_to_dex(char *hex)
     return total;
 }
 
-
+//取得命令中的目標檔名做為參數
 int main(int argc, char *argv[])
 {
+    //初始化每種指令及其對應的opcode
     sic[0].command = "ADD";
         sic[0].code = 24;
 
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
 
     for (int i = 1; i < argc; i++) 
     {  
-
+        //打開來源檔案，同時組合新的檔名並以它新增空白檔案
         FILE *ass = fopen(argv[i],"r");
         printf("[%d] [source] %s\n", i, argv[i]);
         char *obj_file_name = strtok(argv[i], ".");
@@ -180,6 +181,8 @@ int main(int argc, char *argv[])
         FILE *obj_file = fopen(obj_file_name,"w");
         printf("[%d] [target] %s\n\n", i, obj_file_name);
 
+
+        //宣告組譯過程中會用到的buffer及變數
         char buffer[50];
         char obj_temp[100];
         char obj_cat_temp[60];
@@ -205,7 +208,7 @@ int main(int argc, char *argv[])
         label *free_top_temp;
 
 
-
+        //第一次掃描開始，針對不同的狀況及規則算出地址
         while(fgets(buffer, 50, ass))
         {             
             memset(temp1, 0, 50);
@@ -233,6 +236,7 @@ int main(int argc, char *argv[])
                         {
                             if(strcmp(temp2, sic[i].command) == 0)
                             {
+                                //如果是標籤就在串列尾端新增一個節點紀錄標籤名及地址
                                 new = malloc(sizeof(label));
                                 new->label_name = malloc(strlen(temp1));
                                 strcpy(new->label_name, temp1);
@@ -245,6 +249,7 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "RESB") == 0)
                         {
+                            //如果是標籤就在串列尾端新增一個節點紀錄標籤名及地址
                             new = malloc(sizeof(label));
                             new->label_name = malloc(strlen(temp1));
                             strcpy(new->label_name, temp1);
@@ -256,6 +261,7 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "RESW") == 0)
                         {
+                            //如果是標籤就在串列尾端新增一個節點紀錄標籤名及地址
                             new = malloc(sizeof(label));
                             new->label_name = malloc(strlen(temp1));
                             strcpy(new->label_name, temp1);
@@ -267,7 +273,7 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "BYTE") == 0)
                         {
-
+                            //如果是標籤就在串列尾端新增一個節點紀錄標籤名及地址
                             new = malloc(sizeof(label));
                             new->label_name = malloc(strlen(temp1));
                             strcpy(new->label_name, temp1);
@@ -290,6 +296,7 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "WORD") == 0)
                         {
+                            //如果是標籤就在串列尾端新增一個節點紀錄標籤名及地址
                             new = malloc(sizeof(label));
                             new->label_name = malloc(strlen(temp1));
                             strcpy(new->label_name, temp1);
@@ -302,15 +309,11 @@ int main(int argc, char *argv[])
                     else
                     {
                         END_address = code_address;
-
                     }
                 
                 }
                 else
                 {
-                    
-
-
                     code_address += hex_to_dex(temp3);
                     START_address = code_address;
                     strcpy(program_name, temp1);
@@ -319,14 +322,16 @@ int main(int argc, char *argv[])
             
         }
 
-
+        //印出object file 的檔頭片段
         printf("H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
         sprintf(record_head_temp, "H^%-6s^%06X^%06X\n", program_name, START_address, END_address - START_address);
         fputs(record_head_temp, obj_file);
+
+        //重置檔案資料流指針回起點
         rewind(ass);
         code_address = 0;
 
-
+        //第二次掃描開始
         while(fgets(buffer, 50, ass))
         {   
             
@@ -344,6 +349,7 @@ int main(int argc, char *argv[])
                     {
                         for(int i = 0; i < 26; i++)
                         {
+                            //比對第一段字串
                             if(strcmp(temp1, sic[i].command) == 0)
                             { 
                                 obj_code.opcode = sic[i].code;
@@ -365,6 +371,7 @@ int main(int argc, char *argv[])
                                     sscanf(temp2, "%[^,],%s",temp4, temp5);
                                     
                                     label_list_temp = label_list;
+                                    //比對參數是否為標籤
                                     while(label_list_temp->next != NULL)
                                     {
                                         label_list_temp = LL_next_node(label_list_temp);
@@ -381,12 +388,15 @@ int main(int argc, char *argv[])
                                     }
                                 }
 
+                                //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + 3 > 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -407,12 +417,15 @@ int main(int argc, char *argv[])
 
                                 T_count += 3;
 
+                                //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
-
+                                    
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -426,6 +439,7 @@ int main(int argc, char *argv[])
                             } 
                         }
 
+                        //比對第二段字串
                         for(int i = 0; i < 26; i++)
                         {
                             if(strcmp(temp2, sic[i].command) == 0)
@@ -444,12 +458,15 @@ int main(int argc, char *argv[])
                                 }
 
 
+                                //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + 3 > 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
-
+                                    
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -470,12 +487,15 @@ int main(int argc, char *argv[])
 
                                 T_count += 3;
 
+                                //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -489,15 +509,19 @@ int main(int argc, char *argv[])
                             } 
                         }
 
+                        //命令以外的其他狀況處理
                         if(strcmp(temp2, "RESB") == 0)
                         {
                             
+                            //如果片段加上這次的opject code會超過30個Byte
                             if(T_count + atoi(temp3) > 30)
                             {
+                                //將翻譯完的這行命令接在片段的buffer之後
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
 
+                                //輸出整段object code 到終端機和檔案
                                 printf("%s\n", obj_temp);
                                 fputs(obj_temp, obj_file);
                                 fputs("\n", obj_file);
@@ -505,12 +529,15 @@ int main(int argc, char *argv[])
                                 T_count = 0;
                             }
 
+                            //如果片段剛好裝滿30個Byte
                             if(T_count == 30)
                             {
+                                //將翻譯完的這行命令接在片段的buffer之後
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
 
+                                //輸出整段object code 到終端機和檔案
                                 printf("%s", obj_temp);
                                 fputs(obj_temp, obj_file);
                                 fputs("\n", obj_file);
@@ -532,12 +559,15 @@ int main(int argc, char *argv[])
                             
                             if(*temp4 == 'C')
                             {
+                                //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + strlen(temp5) > 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -572,12 +602,15 @@ int main(int argc, char *argv[])
 
                                 T_count += strlen(temp5);
 
+                                //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -589,12 +622,15 @@ int main(int argc, char *argv[])
 
                             if(*temp4 == 'X')
                             {
+                                //如果片段加上這次的opject code會超過30個Byte
                                 if(T_count + strlen(temp5)/2 + strlen(temp5)%2 > 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -615,12 +651,15 @@ int main(int argc, char *argv[])
 
                                 T_count += strlen(temp5)/2 + strlen(temp5)%2;
 
+                                //如果片段剛好裝滿30個Byte
                                 if(T_count == 30)
                                 {
+                                    //將翻譯完的這行命令接在片段的buffer之後
                                     printf("T^%06X^%02X", T_start_count, T_count);
                                     sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                     fputs(record_head_temp, obj_file);
 
+                                    //輸出整段object code 到終端機和檔案
                                     printf("%s\n", obj_temp);
                                     fputs(obj_temp, obj_file);
                                     fputs("\n", obj_file);
@@ -634,12 +673,15 @@ int main(int argc, char *argv[])
 
                         if(strcmp(temp2, "WORD") == 0)
                         {
+                            //如果片段加上這次的opject code會超過30個Byte
                             if(T_count + 3 > 30)
                             {
+                                //將翻譯完的這行命令接在片段的buffer之後
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
 
+                                //輸出整段object code 到終端機和檔案
                                 printf("%s\n", obj_temp);
                                 fputs(obj_temp, obj_file);
                                 fputs("\n", obj_file);
@@ -660,12 +702,15 @@ int main(int argc, char *argv[])
 
                             T_count += 3;
 
+                            //如果片段剛好裝滿30個Byte
                             if(T_count == 30)
                             {
+                                //將翻譯完的這行命令接在片段的buffer之後
                                 printf("T^%06X^%02X", T_start_count, T_count);
                                 sprintf(record_head_temp, "T^%06X^%02X", T_start_count, T_count);
                                 fputs(record_head_temp, obj_file);
 
+                                //輸出整段object code 到終端機和檔案
                                 printf("%s\n", obj_temp);
                                 fputs(obj_temp, obj_file);
                                 fputs("\n", obj_file);
@@ -684,6 +729,7 @@ int main(int argc, char *argv[])
             arg_get = 0;  
         }
 
+        //如果翻譯完有剩餘的片段，把剩下的印出來
         if(strcmp(obj_temp, "") != 0)
         {
             printf("T^%06X^%02X", T_start_count, T_count);
@@ -695,13 +741,16 @@ int main(int argc, char *argv[])
             fputs("\n", obj_file);
         }
 
+        //印出object file 的終止片段
         printf("E^%06X\n", START_address);
         sprintf(record_head_temp, "E^%06X", START_address);
         fputs(record_head_temp, obj_file);
         
+        //關閉來源檔案及目標檔案
         fclose(ass);
         fclose(obj_file);
 
+        //釋放紀錄標籤的鏈結串列
         while(!LL_isEmpty(label_list))
 	    {
             free_temp = LL_next_node(label_list);
