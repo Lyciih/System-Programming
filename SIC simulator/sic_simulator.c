@@ -49,26 +49,93 @@ int hex_to_dex(char *hex)
 }
 
 
-int main(){
+void show(void * memory, char * begin, char * end, int * offset)
+{
+    if(atoi(begin) <= atoi(end)-1)
+            {
+                printf("%06x   ", atoi(begin));
+                if(atoi(begin) % 16 != 0)
+                {
+                    for(int i = 0 ; i < (atoi(begin) % 16) ; i++)
+                    {
+                        printf("  ");
+                        (*offset)++;
+                        if(*offset == 4 || *offset == 8 || *offset == 12)
+                        {
+                            printf("   ");
+                        }
+                    }                  
+                }
+
+                for(int i = atoi(begin); i < atoi(end); i++)
+                {
+                    if(i % 16 == 0 && i != 0)
+                    {
+                        *offset = 0;
+                        printf("\n");
+                        printf("%06x   ", i);
+                    }
+                    if(*((char *)(memory+i)) == '.')
+                    {
+                        printf("..");
+                    }
+                    (*offset)++;
+                    if(*offset == 4 || *offset == 8 || *offset == 12)
+                    {
+                        printf("   ");
+                    }
+                }
+                *offset = 0;
+                printf("\n");
+            }
+            else
+            {
+                printf("error %d\n", atoi(begin));
+            }
+}
+
+
+
+
+int main(int argc, char *argv[]){
     char input[100];
     char temp1[100];
     char temp2[100];
     char buffer[100];
-    char * memory = NULL;
+    int line_seg = 0;
+    void * memory = NULL;
+    if(argv[1] == 0)
+    {
+        printf("10000\n");
+        memory = malloc(10000);
+        memset(memory, '.', 10000);
+    }
+    else
+    {
+        printf("%d\n", atoi(argv[1]));
+        memory = malloc(atoi(argv[1]));
+        memset(memory, '.', atoi(argv[1]));
+    }
     FILE * load_obj = NULL;
 
-    //FILE *ass = fopen(argv[i],"r");
-    //printf("[%d] [source] %s\n", i, argv[i]);
+
     while(1)
     {
         printf(">>> ");
         gets(input);
         sscanf(input, "%s %s", temp1, temp2);
+
         if(strcmp(input, "exit") == 0)
         {
             free(memory);
             break;
         }
+
+        else if(strcmp(temp1, "show") == 0)
+        {
+            show(memory, temp2, argv[1], &line_seg);
+        }
+
         else if(strcmp(temp1, "load") == 0)
         {
             load_obj = fopen(temp2,"r");
@@ -117,7 +184,7 @@ int main(){
                 printf("%06x   ", 0);
                 for(int i=0;i<size;i++)
                 {
-                    if(*(memory+i) == '.')
+                    if(*((char *)(memory+i)) == '.')
                     {
                         printf("..");
 
@@ -142,9 +209,6 @@ int main(){
                 
                 fclose(load_obj);
             }
-            
-
         }
     }
-
 }

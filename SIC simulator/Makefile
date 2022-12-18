@@ -11,4 +11,4 @@ clean :
 	rm -rf sic_simulator sic_simulator.o
 
 run :
-	./sic_simulator
+	./sic_simulator 2000
