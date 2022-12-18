@@ -23,5 +23,5 @@ gdb:
 
 .PHONY: run
 run:
-	@./assembler test.s
+	@assembler test.s
 

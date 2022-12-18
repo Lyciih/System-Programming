@@ -26,7 +26,7 @@ int exponent_Int(const int base, int n)
 //將讀取的字串視為16進位，並轉換為10進位數字的函數
 int hex_to_dex(char *hex)
 {
-    char *char_temp = (char *)malloc(strlen(hex));
+    char * char_temp = (char *)malloc(strlen(hex));
     strcpy(char_temp, hex);
     char_temp = strtok(char_temp, "\n");
     char temp[2];
@@ -45,7 +45,7 @@ int hex_to_dex(char *hex)
         else{total += exponent_Int(16, count)*atoi(temp);}    
         char_temp++;    
     }
-
+    free(char_temp);
     return total;
 }
 
@@ -172,20 +172,18 @@ void load(char * target, void * memory)
                 printf("%X ", hex_to_dex(begin));
                 int memory_count = hex_to_dex(begin);
                 int state = 0;
-                
+
                 for(int i = 9 ; i < strlen(buffer) - 1 ; i++)
                 {
                     if(state == 0)
                     {
                         *((uint8_t *)memory + memory_count) = (hex_to_dex_c(buffer[i]) << 4) ;
-                        //*((char *)memory + 1) = 10 << 0;
                         printf("%c", buffer[i]);
                         state = 1;
                     }
                     else if(state == 1)
                     {
                         *((uint8_t *)memory + memory_count) |= (hex_to_dex_c(buffer[i]) << 0) ;
-                        //*(char *)memory = 10 << 0;
                         memory_count++;
                         printf("%c", buffer[i]);
                         state = 0;
@@ -206,17 +204,22 @@ int main(int argc, char *argv[]){
     char temp1[100];
     char temp2[100];
     void * memory = NULL;
+    int system_size = 0;
+    int loaded = 0; 
     if(argv[1] == 0)
     {
         printf("10000\n");
         memory = malloc(hex_to_dex("10000"));
         memset(memory, '.', hex_to_dex("10000"));
+        system_size = 10000;
     }
     else
     {
-        printf("%d\n",  hex_to_dex(argv[1]));
-        memory = malloc(hex_to_dex(argv[1]));
-        memset(memory, '.',  hex_to_dex(argv[1]));
+        system_size = hex_to_dex(argv[1]);
+        printf("%d\n",  system_size);
+        memory = malloc(system_size);
+        memset(memory, '.',  system_size);
+        
     }
 
 
@@ -242,11 +245,29 @@ int main(int argc, char *argv[]){
 
         else if(strcmp(temp1, "load") == 0)
         {
-            load(temp2, memory);
+            if(loaded == 0)
+            {
+                load(temp2, memory);
+                loaded = 1;
+            }
+            else
+            {
+                printf("error , an object code has been load\n");
+            }
+            
+            
             temp2[0] = '0';
             temp2[1] = '\0';
             temp1[0] = '\0';
-            //show(memory, temp2, argv[1]);
+        }
+
+        else if(strcmp(temp1, "unload") == 0)
+        {
+            memset(memory, '.',  system_size);
+            loaded = 0;
+            temp2[0] = '0';
+            temp2[1] = '\0';
+            temp1[0] = '\0';
         }
     }
 }
