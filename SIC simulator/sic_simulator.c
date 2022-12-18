@@ -223,6 +223,10 @@ int main(int argc, char *argv[]){
         
     }
 
+    temp2[0] = '0';
+    temp2[1] = '\0';
+    temp1[0] = '\0';
+
 
     while(1)
     {
