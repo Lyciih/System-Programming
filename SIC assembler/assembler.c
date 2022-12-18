@@ -62,7 +62,8 @@ int exponent_Int(const int base, int n)
 //將讀取的字串視為16進位，並轉換為10進位數字的函數
 int hex_to_dex(char *hex)
 {
-    char *char_temp = (char *)malloc(strlen(hex));
+    char * char_temp = (char *)malloc(strlen(hex));
+    char * temp_begin = char_temp;
     strcpy(char_temp, hex);
     char_temp = strtok(char_temp, "\n");
     char temp[2];
@@ -81,7 +82,7 @@ int hex_to_dex(char *hex)
         else{total += exponent_Int(16, count)*atoi(temp);}    
         char_temp++;    
     }
-
+    free(temp_begin);
     return total;
 }
 
