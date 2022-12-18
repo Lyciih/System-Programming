@@ -231,10 +231,10 @@ int main(int argc, char *argv[]){
     while(1)
     {
         printf(">>> ");
-        gets(input);
+        fgets(input, 100, stdin);
         sscanf(input, "%s %s", temp1, temp2);
 
-        if(strcmp(input, "exit") == 0)
+        if(strcmp(temp1, "exit") == 0)
         {
             free(memory);
             break;
