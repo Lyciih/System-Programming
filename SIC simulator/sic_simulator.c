@@ -49,49 +49,59 @@ int hex_to_dex(char *hex)
 }
 
 
+
+
 void show(void * memory, char * begin, char * end, int * offset)
 {
-    if(atoi(begin) <= atoi(end)-1)
+    if(hex_to_dex(begin) <= hex_to_dex(end)-1)
+    {
+                
+        if(hex_to_dex(begin) % 16 != 0)
+        {
+            printf("%06x   ", hex_to_dex(begin));
+            for(int i = 0 ; i < (hex_to_dex(begin) % 16) ; i++)
             {
-                printf("%06x   ", atoi(begin));
-                if(atoi(begin) % 16 != 0)
+                printf("  ");
+                (*offset)++;
+                if(*offset == 4 || *offset == 8 || *offset == 12)
                 {
-                    for(int i = 0 ; i < (atoi(begin) % 16) ; i++)
-                    {
-                        printf("  ");
-                        (*offset)++;
-                        if(*offset == 4 || *offset == 8 || *offset == 12)
-                        {
-                            printf("   ");
-                        }
-                    }                  
+                    printf("   ");
                 }
+            }                  
+        }
 
-                for(int i = atoi(begin); i < atoi(end); i++)
-                {
-                    if(i % 16 == 0 && i != 0)
-                    {
-                        *offset = 0;
-                        printf("\n");
-                        printf("%06x   ", i);
-                    }
-                    if(*((char *)(memory+i)) == '.')
-                    {
-                        printf("..");
-                    }
-                    (*offset)++;
-                    if(*offset == 4 || *offset == 8 || *offset == 12)
-                    {
-                        printf("   ");
-                    }
-                }
+        for(int i = hex_to_dex(begin); i < hex_to_dex(end); i++)
+        {
+            if(i % 16 == 0)
+            {
                 *offset = 0;
+                printf("%06x   ", i);
+            }
+
+            if(*((char *)(memory+i)) == '.')
+            {
+                printf("..");
+            }
+
+            (*offset)++;
+
+            if(*offset == 4 || *offset == 8 || *offset == 12)
+            {
+                printf("   ");
+            }
+
+            if(*offset == 16)
+            {
                 printf("\n");
             }
-            else
-            {
-                printf("error %d\n", atoi(begin));
-            }
+        }
+        *offset = 0;
+        printf("\n");
+    }
+    else
+    {
+        printf("error %d\n", hex_to_dex(begin));
+    }
 }
 
 
@@ -107,14 +117,14 @@ int main(int argc, char *argv[]){
     if(argv[1] == 0)
     {
         printf("10000\n");
-        memory = malloc(10000);
-        memset(memory, '.', 10000);
+        memory = malloc(hex_to_dex("10000"));
+        memset(memory, '.', hex_to_dex("10000"));
     }
     else
     {
-        printf("%d\n", atoi(argv[1]));
-        memory = malloc(atoi(argv[1]));
-        memset(memory, '.', atoi(argv[1]));
+        printf("%d\n",  hex_to_dex(argv[1]));
+        memory = malloc(hex_to_dex(argv[1]));
+        memset(memory, '.',  hex_to_dex(argv[1]));
     }
     FILE * load_obj = NULL;
 
@@ -145,14 +155,22 @@ int main(int argc, char *argv[]){
             }
             else
             {
+                char begin[20];
                 int size = 0;
                 while(fgets(buffer, 100, load_obj))
                 {
                     if(*buffer == 'H')
                     {
+                        for(int i = 0 ; i < 6 ; i++)
+                        {
+                            begin[i] = buffer[i + 7];
+                        }
+                        begin[6] = '\0';
+                        printf("%d ", hex_to_dex(begin));
+                        
                         size = hex_to_dex(buffer+13);
-                        memory = (char *)malloc(size);
-                        memset(memory, '.', size);
+                        printf("%d \n", size);
+                        
                     }
 
                     /*
@@ -179,34 +197,7 @@ int main(int argc, char *argv[]){
                     */
                 }
 
-                int line = 0;
-                int space = 0;
-                printf("%06x   ", 0);
-                for(int i=0;i<size;i++)
-                {
-                    if(*((char *)(memory+i)) == '.')
-                    {
-                        printf("..");
-
-                    }
-                    //printf("%c", *(memory+i));                   
-                    line++;
-                    if(line == 4 || line == 8 || line == 12)
-                    {
-                        printf("   ");
-
-                    }
-                    if(line == 16)
-                    {
-                        line = 0;
-                        printf("\n");
-                        printf("%06x   ", i+1);
-                    }
-                }
-                printf("\n");
-                
-
-                
+                show(memory, temp2, argv[1], &line_seg);
                 fclose(load_obj);
             }
         }
