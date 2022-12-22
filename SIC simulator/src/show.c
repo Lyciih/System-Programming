@@ -9,7 +9,7 @@ void show(void * memory, char * begin, char * end)
     {               
         if(hex_to_dex(begin) % 16 != 0)
         {
-            printf("%04x   ", hex_to_dex(begin));
+            printf("%04X   ", hex_to_dex(begin));
             for(int i = 0 ; i < (hex_to_dex(begin) % 16) ; i++)
             {
                 printf("  ");
@@ -26,7 +26,7 @@ void show(void * memory, char * begin, char * end)
             if(i % 16 == 0)
             {
                 offset = 0;
-                printf("%04x   ", i);
+                printf("%04X   ", i);
             }
 
             if(*((char *)(memory+i)) == '.')
