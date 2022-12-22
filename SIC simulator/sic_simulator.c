@@ -217,7 +217,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
     int temp2 = 0;
     int temp3 = 0;
     int x_mod = 0;
+    FILE * input = NULL;
+    FILE * output = NULL;
     cpu->L = *program_end;
+    input = fopen("F1", "r");
+    output = fopen("F5", "r");
     
     while(cpu->PC < *program_end)
     {
@@ -233,7 +237,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
         switch(*((uint8_t *)memory + cpu->PC))
         {
             case 24:
-                //printf("ADD\n");
+                printf("ADD\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -251,11 +255,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
 
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 52:
-                //printf("JGT\n");
+                printf("JGT\n");
                 cpu->PC += 3;
                 break;
 
@@ -303,7 +307,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 break;
 
             case 4:
-                //printf("LDX\n");
+                printf("LDX\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -341,11 +345,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
 
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 216:
-                //printf("RD\n");
+                printf("RD\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -353,11 +357,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 cpu->A = *((uint8_t *)memory + temp);
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 220:
-                //printf("WD\n");
+                printf("WD\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -365,11 +369,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 *((uint8_t *)memory + temp) = cpu->A;
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 84:
-                //printf("STCH\n");
+                printf("STCH\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -385,7 +389,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 }
                 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 16:
@@ -408,7 +412,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
 
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
 
                 break;
 
@@ -432,12 +436,12 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
 
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
 
                 break;
 
             case 44:
-                //printf("TIX\n");
+                printf("TIX\n");
                 cpu->X++;
 
                 temp = *((uint8_t *)memory + cpu->PC + 1);
@@ -465,7 +469,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 }
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 64:
@@ -483,7 +487,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 break;
 
             case 56:
-                //printf("JLT\n");
+                printf("JLT\n");
                 temp = cpu->PC;
                 if(cpu->SW == '<')
                 {
@@ -496,11 +500,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 {
                     cpu->PC += 3;
                 }
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 80:
-                //printf("LDCH\n");
+                printf("LDCH\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -516,7 +520,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 }
                 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 32:
@@ -597,7 +601,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
             
 
             case 40:
-                //printf("COMP\n");
+                printf("COMP\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
@@ -622,11 +626,11 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 }
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             case 48:
-                //printf("JEQ\n");
+                printf("JEQ\n");
                 temp = cpu->PC;
                 if(cpu->SW == '=')
                 {
@@ -639,7 +643,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 {
                     cpu->PC += 3;
                 }
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);            
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);            
                 break;
 
             case 72:
@@ -706,10 +710,17 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 break;
 
             case 224:
-                //printf("TD\n");
+                printf("TD\n");
                 temp = *((uint8_t *)memory + cpu->PC + 1);
                 temp = temp << 8;
                 temp |= *((uint8_t *)memory + cpu->PC + 2);
+
+		//temp2 = *((uint8_t *)memory + temp);
+		//input = fopen("F1", "r");
+
+
+//here
+		//printf("%02X\n", temp2);
 
                 if(*((uint8_t *)memory + temp) == '.')
                 {
@@ -721,7 +732,7 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 }
 
                 cpu->PC += 3;
-                //printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
+                printf("A : %06X  X : %06X  L : %06X  PC : %06X  SW : %06X\n\n", cpu->A, cpu->X, cpu->L, cpu->PC, cpu->SW);
                 break;
 
             //default:
@@ -729,7 +740,9 @@ void run(int * program_begin, int * program_end, void * memory, cpu_t * cpu)
                 //break;
         }
     }
-
+    fclose(input);
+    fclose(output);
+	
     printf("\n");
 }
 
@@ -779,7 +792,7 @@ int main(int argc, char *argv[]){
 
     while(1)
     {
-        //printf("%06X %06X %06X %06X %06X\n", cpu.A, cpu.X, cpu.L, cpu.PC, cpu.SW);
+        printf("%06X %06X %06X %06X %06X\n", cpu.A, cpu.X, cpu.L, cpu.PC, cpu.SW);
         printf(">>> ");
         fgets(input, 100, stdin);
         sscanf(input, "%s %s", temp1, temp2);
