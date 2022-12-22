@@ -2,7 +2,7 @@ COPY    START   1000
 FIRST   STL     RETADR
 CLOOP   JSUB    RDREC
         LDA     LENGTH
-        COMP    MAXLEN
+        COMP    ZERO
         JEQ     ENDFIL
         JSUB    WRREC
         J       CLOOP
